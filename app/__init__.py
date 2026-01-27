@@ -1,0 +1,51 @@
+from flask import Flask, jsonify
+
+
+def create_app():
+    from app.swagger_utils import build_swagger
+    from app.swagger_bp import swagger_ui_blueprint
+    from app.db import db
+    from app.config import SQLALCHEMY_DATABASE_URI, SWAGGER_API_URL
+    from app.expense.routes import bp as expense_bp
+
+    app = Flask(__name__, instance_relative_config=True)
+    app.config.from_mapping(SQLALCHEMY_DATABASE_URI=SQLALCHEMY_DATABASE_URI)
+
+    @app.route("/")
+    def home():
+        """
+        User greeting on the Home page
+        ---
+        tags:
+            - Home page
+        produces:
+            - application/json
+        responses:
+            200:
+               description: Greeting
+               schema:
+                     $ref: '#/definitions/Hello'
+        """
+        return jsonify(message="Hello, I'm your Expense tracking App!")
+
+    @app.errorhandler(404)
+    def handle_404(error):
+        return jsonify(error="We couldn't find that"), 404
+
+    @app.route(SWAGGER_API_URL)
+    def spec():
+        return jsonify(build_swagger(app))
+
+    # Init DB
+    db.init_app(app)
+
+    # Create context
+    with app.app_context():
+        # Create DB Tables
+        db.create_all()
+
+    # Register Blueprints
+    app.register_blueprint(expense_bp)
+    app.register_blueprint(swagger_ui_blueprint)
+
+    return app
