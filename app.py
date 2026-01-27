@@ -61,6 +61,24 @@ def spec():
                 "description": "This is my expense description.",
             },
         },
+        "ExpenseOut": {
+            "allOf": [
+                {"$ref": "#/definitions/ExpenseIn"},
+                {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "number"},
+                        "created_at": {"type": "datetime"},
+                        "updated_at": {"type": "datetime"},
+                    },
+                    "example": {
+                        "id": 0,
+                        "created_at": datetime.now().isoformat(),
+                        "updated_at": datetime.now().isoformat(),
+                    },
+                },
+            ]
+        },
     }
 
     return jsonify(swg)
@@ -120,6 +138,19 @@ def create_expense():
 
 @app.route("/expense", methods=["GET"])
 def get_expenses():
+    """
+    Retrieve all Expense records
+    ---
+    tags:
+        - Expense List
+    responses:
+        200:
+           description: Expense records
+           schema:
+                 type: array
+                 items:
+                      $ref: '#/definitions/ExpenseOut'
+    """
     expenses = Expense.query.all()
 
     return (
