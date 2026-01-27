@@ -1,6 +1,14 @@
 from flask import Flask, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase
 
+class Base(DeclarativeBase):
+    pass
 app = Flask(__name__)
+app.config.from_mapping(SQLALCHEMY_DATABASE_URI='sqlite:///expenses.sqlite3')
+
+db = SQLAlchemy(model_class=Base)
+db.init_app(app)
 
 @app.route("/")
 def home():
