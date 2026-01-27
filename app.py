@@ -3,6 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from datetime import datetime, timezone
+from flask_swagger import swagger
+from flask_swagger_ui import get_swaggerui_blueprint
 
 
 class Base(DeclarativeBase):
@@ -36,6 +38,22 @@ class Expense(TimestampModel):
 
     def __repr__(self):
         return f"Expense(title={self.title}, amount={self.amount}"
+
+
+@app.route("/spec")
+def spec():
+    swg = swagger(app)
+
+    swg["info"]["title"] = "Expenses tracking App"
+    swg["info"]["version"] = "0.0.1"
+
+    return jsonify(swg)
+
+
+# Create Swagger Blueprint
+swagger_ui_blueprint = get_swaggerui_blueprint(base_url="/docs", api_url="/spec")
+# Register Swagger Blueprint
+app.register_blueprint(swagger_ui_blueprint)
 
 
 @app.route("/")
