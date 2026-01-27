@@ -46,6 +46,22 @@ def spec():
 
     swg["info"]["title"] = "Expenses tracking App"
     swg["info"]["version"] = "0.0.1"
+    swg["definitions"] = {
+        "ExpenseIn": {
+            "type": "object",
+            "discriminator": "expenseInType",
+            "properties": {
+                "title": {"type": "string"},
+                "amount": {"type": "number"},
+                "description": {"type": "string"},
+            },
+            "example": {
+                "title": "I'm your expense!",
+                "amount": 100,
+                "description": "This is my expense description.",
+            },
+        },
+    }
 
     return jsonify(swg)
 
@@ -69,6 +85,19 @@ def home():
 
 @app.route("/expense", methods=["POST"])
 def create_expense():
+    """
+    Create a new Expense record
+    ---
+    tags:
+        - Expense Create
+    parameters:
+        - name: expense
+          in: body
+          description: Data for this Expense
+          required: true
+          schema:
+            $ref: '#/definitions/ExpenseIn'
+    """
     data = request.json
     new_expense = Expense(
         title=data["title"], amount=data["amount"], description=data["description"]
