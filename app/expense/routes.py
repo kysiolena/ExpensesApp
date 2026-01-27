@@ -1,7 +1,9 @@
 from flask import Blueprint, request, jsonify
+from marshmallow import ValidationError
 
 from app.db import db
 from app.expense.models import Expense
+from app.expense.schemas import expense_schema, expenses_schema
 
 bp = Blueprint("expense", __name__, url_prefix="/expense")
 
@@ -26,7 +28,13 @@ def create_expense():
            schema:
               $ref: '#/definitions/ExpenseOut'
     """
-    data = request.json
+    json_data = request.json
+
+    try:
+        data = expense_schema.load(json_data)
+    except ValidationError as e:
+        return e.messages, 422
+
     new_expense = Expense(
         title=data["title"], amount=data["amount"], description=data["description"]
     )
@@ -34,14 +42,7 @@ def create_expense():
     db.session.commit()
 
     return (
-        jsonify(
-            {
-                "id": new_expense.id,
-                "title": new_expense.title,
-                "amount": new_expense.amount,
-                "description": new_expense.description,
-            }
-        ),
+        jsonify(expense_schema.dump(new_expense)),
         201,
     )
 
@@ -64,17 +65,7 @@ def get_expenses():
     expenses = Expense.query.all()
 
     return (
-        jsonify(
-            [
-                {
-                    "id": expense.id,
-                    "title": expense.title,
-                    "amount": expense.amount,
-                    "description": expense.description,
-                }
-                for expense in expenses
-            ]
-        ),
+        jsonify(expenses_schema.dump(expenses)),
         200,
     )
 
@@ -107,14 +98,7 @@ def get_expense(id: int):
     expense = db.get_or_404(Expense, id)
 
     return (
-        jsonify(
-            {
-                "id": expense.id,
-                "title": expense.title,
-                "amount": expense.amount,
-                "description": expense.description,
-            }
-        ),
+        jsonify(expense_schema.dump(expense)),
         200,
     )
 
@@ -152,7 +136,12 @@ def update_expense(id: int):
     """
     expense = db.get_or_404(Expense, id)
 
-    data = request.json
+    json_data = request.json
+
+    try:
+        data = expense_schema.load(json_data, partial=True)
+    except ValidationError as e:
+        return e.messages, 422
 
     expense.title = data.get("title", expense.title)
     expense.amount = data.get("amount", expense.amount)
@@ -161,14 +150,7 @@ def update_expense(id: int):
     db.session.commit()
 
     return (
-        jsonify(
-            {
-                "id": expense.id,
-                "title": expense.title,
-                "amount": expense.amount,
-                "description": expense.description,
-            }
-        ),
+        jsonify(expense_schema.dump(expense)),
         200,
     )
 
