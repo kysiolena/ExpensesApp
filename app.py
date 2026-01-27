@@ -58,6 +58,12 @@ app.register_blueprint(swagger_ui_blueprint)
 
 @app.route("/")
 def home():
+    """
+    User greeting on the Home page
+    ---
+    tags:
+        - Home page
+    """
     return jsonify(message="Hello, I'm your Expense tracking App!")
 
 
