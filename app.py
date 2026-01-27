@@ -290,6 +290,27 @@ def update_expense(id: int):
 
 @app.route("/expense/<int:id>", methods=["DELETE"])
 def delete_expense(id: int):
+    """
+    Delete an Expense record
+    ---
+    tags:
+        - Expense Delete
+    produces:
+        - application/json
+    parameters:
+        - name: id
+          in: path
+          description: Expense ID
+          required: true
+          type: number
+    responses:
+        204:
+           description: Expense record deleted
+        404:
+           description: Expense not found
+           schema:
+              $ref: '#/definitions/NotFound'
+    """
     expense = db.get_or_404(Expense, id)
 
     db.session.delete(expense)
