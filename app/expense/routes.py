@@ -19,12 +19,12 @@ def create_expense():
           description: Data for this Expense
           required: true
           schema:
-            $ref: '#/definitions/In'
+            $ref: '#/definitions/ExpenseIn'
     responses:
         201:
            description: Expense created
            schema:
-              $ref: '#/definitions/Out'
+              $ref: '#/definitions/ExpenseOut'
     """
     data = request.json
     new_expense = Expense(
@@ -59,7 +59,7 @@ def get_expenses():
            schema:
                  type: array
                  items:
-                      $ref: '#/definitions/Out'
+                      $ref: '#/definitions/ExpenseOut'
     """
     expenses = Expense.query.all()
 
@@ -98,7 +98,7 @@ def get_expense(id: int):
         200:
            description: Expense record
            schema:
-              $ref: '#/definitions/Out'
+              $ref: '#/definitions/ExpenseOut'
         404:
            description: Expense not found
            schema:
@@ -139,12 +139,12 @@ def update_expense(id: int):
           description: Data for this Expense
           required: true
           schema:
-            $ref: '#/definitions/In'
+            $ref: '#/definitions/ExpenseIn'
     responses:
        200:
           description: Expense record updated
           schema:
-             $ref: '#/definitions/Out'
+             $ref: '#/definitions/ExpenseOut'
        404:
           description: Expense not found
           schema:
