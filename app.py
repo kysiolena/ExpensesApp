@@ -140,6 +140,11 @@ def create_expense():
           required: true
           schema:
             $ref: '#/definitions/ExpenseIn'
+    responses:
+        201:
+           description: Expense created
+           schema:
+              $ref: '#/definitions/ExpenseOut'
     """
     data = request.json
     new_expense = Expense(
