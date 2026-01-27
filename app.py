@@ -236,6 +236,35 @@ def get_expense(id: int):
 
 @app.route("/expense/<int:id>", methods=["PATCH"])
 def update_expense(id: int):
+    """
+    Update an Expense record
+    ---
+    tags:
+        - Expense Update
+    produces:
+        - application/json
+    parameters:
+        - name: id
+          in: path
+          description: Expense ID
+          required: true
+          type: number
+        - name: expense
+          in: body
+          description: Data for this Expense
+          required: true
+          schema:
+            $ref: '#/definitions/ExpenseIn'
+    responses:
+       200:
+          description: Expense record updated
+          schema:
+             $ref: '#/definitions/ExpenseOut'
+       404:
+          description: Expense not found
+          schema:
+             $ref: '#/definitions/NotFound'
+    """
     expense = db.get_or_404(Expense, id)
 
     data = request.json
