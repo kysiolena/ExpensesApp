@@ -196,7 +196,29 @@ def get_expenses():
 
 @app.route("/expense/<int:id>", methods=["GET"])
 def get_expense(id: int):
-
+    """
+    Retrieve an Expense record
+    ---
+    tags:
+        - Expense
+    produces:
+        - application/json
+    parameters:
+        - name: id
+          in: path
+          description: Expense ID
+          required: true
+          type: number
+    responses:
+        200:
+           description: Expense record
+           schema:
+              $ref: '#/definitions/ExpenseOut'
+        404:
+           description: Expense not found
+           schema:
+               $ref: '#/definitions/NotFound'
+    """
     expense = db.get_or_404(Expense, id)
 
     return (
