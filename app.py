@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -45,27 +45,101 @@ def home():
 
 @app.route("/expense", methods=["POST"])
 def create_expense():
-    pass
+    data = request.json
+    new_expense = Expense(
+        title=data["title"], amount=data["amount"], description=data["description"]
+    )
+    db.session.add(new_expense)
+    db.session.commit()
+
+    return (
+        jsonify(
+            {
+                "id": new_expense.id,
+                "title": new_expense.title,
+                "amount": new_expense.amount,
+                "description": new_expense.description,
+            }
+        ),
+        201,
+    )
 
 
 @app.route("/expense", methods=["GET"])
 def get_expenses():
-    pass
+    expenses = Expense.query.all()
+
+    return (
+        jsonify(
+            [
+                {
+                    "id": expense.id,
+                    "title": expense.title,
+                    "amount": expense.amount,
+                    "description": expense.description,
+                }
+                for expense in expenses
+            ]
+        ),
+        200,
+    )
 
 
 @app.route("/expense/<int:id>", methods=["GET"])
 def get_expense(id: int):
-    pass
+    expense = db.get_or_404(Expense, id)
+
+    return (
+        jsonify(
+            {
+                "id": expense.id,
+                "title": expense.title,
+                "amount": expense.amount,
+                "description": expense.description,
+            }
+        ),
+        200,
+    )
 
 
 @app.route("/expense/<int:id>", methods=["PATCH"])
 def update_expense(id: int):
-    pass
+    expense = db.get_or_404(Expense, id)
+
+    data = request.json
+
+    expense.title = data.get("title", expense.title)
+    expense.amount = data.get("amount", expense.amount)
+    expense.description = data.get("description", expense.description)
+
+    db.session.commit()
+
+    return (
+        jsonify(
+            {
+                "id": expense.id,
+                "title": expense.title,
+                "amount": expense.amount,
+                "description": expense.description,
+            }
+        ),
+        200,
+    )
 
 
 @app.route("/expense/<int:id>", methods=["DELETE"])
 def delete_expense(id: int):
-    pass
+    expense = db.get_or_404(Expense, id)
+
+    db.session.delete(expense)
+    db.session.commit()
+
+    return "", 204
+
+
+@app.errorhandler(404)
+def handle_404(error):
+    return jsonify(error="We couldn't find that"), 404
 
 
 if __name__ == "__main__":
