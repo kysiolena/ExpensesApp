@@ -47,6 +47,16 @@ def spec():
     swg["info"]["title"] = "Expenses tracking App"
     swg["info"]["version"] = "0.0.1"
     swg["definitions"] = {
+        "Hello": {
+            "type": "object",
+            "discriminator": "helloType",
+            "properties": {
+                "message": {
+                    "type": "string",
+                }
+            },
+            "example": {"message": "Hello, I'm your Expenses tracking app!"},
+        },
         "ExpenseIn": {
             "type": "object",
             "discriminator": "expenseInType",
@@ -97,6 +107,13 @@ def home():
     ---
     tags:
         - Home page
+    produces:
+        - application/json
+    responses:
+        200:
+           description: Greeting
+           schema:
+                 $ref: '#/definitions/Hello'
     """
     return jsonify(message="Hello, I'm your Expense tracking App!")
 
