@@ -89,6 +89,14 @@ def spec():
                 },
             ]
         },
+        "NotFound": {
+            "type": "object",
+            "discriminator": "notFoundType",
+            "properties": {
+                "error": {"type": "string"},
+            },
+            "example": {"error": "We couldn't find that"},
+        },
     }
 
     return jsonify(swg)
@@ -188,6 +196,7 @@ def get_expenses():
 
 @app.route("/expense/<int:id>", methods=["GET"])
 def get_expense(id: int):
+
     expense = db.get_or_404(Expense, id)
 
     return (
