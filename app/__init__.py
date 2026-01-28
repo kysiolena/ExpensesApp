@@ -7,6 +7,7 @@ def create_app():
     from app.db import db
     from app.config import SQLALCHEMY_DATABASE_URI, SWAGGER_API_URL
     from app.expense.routes import bp as expense_bp
+    from app.user.routes import bp as user_bp
     from app.migrate import migrate
 
     app = Flask(__name__, instance_relative_config=True)
@@ -44,6 +45,7 @@ def create_app():
     migrate.init_app(app, db, render_as_batch=True)
 
     # Register Blueprints
+    app.register_blueprint(user_bp)
     app.register_blueprint(expense_bp)
     app.register_blueprint(swagger_ui_blueprint)
 
