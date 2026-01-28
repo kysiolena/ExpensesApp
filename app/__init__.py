@@ -7,6 +7,7 @@ def create_app():
     from app.db import db
     from app.config import SQLALCHEMY_DATABASE_URI, SWAGGER_API_URL
     from app.expense.routes import bp as expense_bp
+    from app.migrate import migrate
 
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(SQLALCHEMY_DATABASE_URI=SQLALCHEMY_DATABASE_URI)
@@ -39,10 +40,8 @@ def create_app():
     # Init DB
     db.init_app(app)
 
-    # Create context
-    with app.app_context():
-        # Create DB Tables
-        db.create_all()
+    # render_as_batch for SQLite only
+    migrate.init_app(app, db, render_as_batch=True)
 
     # Register Blueprints
     app.register_blueprint(expense_bp)

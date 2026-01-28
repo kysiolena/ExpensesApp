@@ -9,4 +9,31 @@
 ```
 
 ## Swagger API Documentations
-`/docs`
+
+[Flask-swagger](https://pypi.org/project/flask-swagger/)
+
+Route: `/docs`
+
+## Migrations
+
+[Flask-Migrate](https://flask-migrate.readthedocs.io/en/latest/)
+
+###  Create a migration repository  
+```terminaloutput
+    flask db init
+```
+
+###  Generate an initial migration  
+```terminaloutput
+    flask db migrate -m "Initial migration"
+```
+
+###  Apply the changes described by the migration script to your database  
+```terminaloutput
+    flask db upgrade
+```
+
+### See all the commands that are available
+```terminaloutput
+    flask db --help
+```
