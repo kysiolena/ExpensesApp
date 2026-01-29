@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token
 from marshmallow import ValidationError
@@ -39,6 +41,27 @@ def create_user(data):
 def register():
     """
     Register a new user
+    ---
+    tags:
+        - User Registration
+    produces:
+        - application/json
+    parameters:
+        - name: user
+          in: body
+          description: User data
+          required: true
+          schema:
+            $ref: '#/definitions/UserIn'
+    responses:
+        201:
+           description: User created
+           schema:
+             $ref: '#/definitions/UserOut'
+        400:
+           description: Duplicate data insertion
+        422:
+           description: Validation error
     """
     # Get data
     json_data = request.json
@@ -67,11 +90,41 @@ def register():
 
 @bp.route("/login", methods=["POST"])
 def login():
+    """
+    Login a user
+    ---
+    tags:
+        - User Login
+    produces:
+        - application/json
+    parameters:
+        - name: user
+          in: body
+          description: User data
+          required: true
+          schema:
+            $ref: '#/definitions/UserIn'
+    responses:
+        200:
+           description: Login successful
+           schema:
+             $ref: '#/definitions/TokenOut'
+        401:
+           description: Invalid credentials
+        404:
+           description: User not found
+           schema:
+             $ref: '#/definitions/NotFound'
+        422:
+           description: Validation error
+    """
+
     # Get data
     json_data = request.json
 
     try:
-        data = user_schema.load(json_data)
+        no_fields: Sequence[str] = ["username", "first_name", "last_name", "phone"]
+        data = user_schema.load(json_data, partial=no_fields)
     except ValidationError as e:
         return jsonify(e.messages), 422
 

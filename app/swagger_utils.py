@@ -2,6 +2,7 @@ from flask import Flask
 from flask_swagger import swagger
 
 from app.expense.swagger_definitions import swd as expense_swd
+from app.user.swagger_definitions import swd as user_swd
 
 
 def build_swagger(app: Flask):
@@ -31,6 +32,8 @@ def build_swagger(app: Flask):
         },
         # Expense
         **expense_swd,
+        # User
+        **user_swd,
     }
 
     return swg

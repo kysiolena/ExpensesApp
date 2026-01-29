@@ -18,6 +18,10 @@ def create_expense():
     tags:
         - Expense Create
     parameters:
+        - name: Authorization
+          in: header
+          description: JWT token
+          required: true
         - name: expense
           in: body
           description: Data for this Expense
@@ -60,6 +64,13 @@ def get_expenses():
     ---
     tags:
         - Expense List
+    produces:
+        - application/json
+    parameters:
+        - name: Authorization
+          in: header
+          description: JWT token
+          required: true
     responses:
         200:
            description: Expense records
@@ -85,6 +96,10 @@ def get_expense(id: int):
     produces:
         - application/json
     parameters:
+        - name: Authorization
+          in: header
+          description: JWT token
+          required: true
         - name: id
           in: path
           description: Expense ID
@@ -95,6 +110,10 @@ def get_expense(id: int):
            description: Expense record
            schema:
               $ref: '#/definitions/ExpenseOut'
+        401:
+           description: Access denied
+           schema:
+               $ref: '#/definitions/Unauthorized'
         404:
            description: Expense not found
            schema:
@@ -122,6 +141,10 @@ def update_expense(id: int):
     produces:
         - application/json
     parameters:
+        - name: Authorization
+          in: header
+          description: JWT token
+          required: true
         - name: id
           in: path
           description: Expense ID
@@ -138,6 +161,10 @@ def update_expense(id: int):
           description: Expense record updated
           schema:
              $ref: '#/definitions/ExpenseOut'
+       401:
+           description: Access denied
+           schema:
+               $ref: '#/definitions/Unauthorized'
        404:
           description: Expense not found
           schema:
@@ -178,6 +205,10 @@ def delete_expense(id: int):
     produces:
         - application/json
     parameters:
+        - name: Authorization
+          in: header
+          description: JWT token
+          required: true
         - name: id
           in: path
           description: Expense ID
@@ -186,6 +217,10 @@ def delete_expense(id: int):
     responses:
         204:
            description: Expense record deleted
+        401:
+           description: Access denied
+           schema:
+               $ref: '#/definitions/Unauthorized'
         404:
            description: Expense not found
            schema:
