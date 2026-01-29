@@ -1,0 +1,3 @@
+export SQLALCHEMY_DATABASE_URI=""
+
+export JWT_SECRET_KEY=""

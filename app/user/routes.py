@@ -1,38 +1,86 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import create_access_token
+from marshmallow import ValidationError
+from sqlalchemy.exc import IntegrityError
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from app.db import db
 from app.user.models import User
+from app.user.schemas import user_schema
 
 bp = Blueprint("user", __name__, url_prefix="/user")
 
 
-@bp.route("/", methods=["POST"])
-def create_user():
+def create_user(data):
     """
     Create a new User record
     """
-    data = request.json
+    try:
+        new_user = User(
+            username=data["username"],
+            first_name=data["first_name"],
+            last_name=data["last_name"],
+            email=data["email"],
+            phone=data["phone"],
+            password=generate_password_hash(data["password"]),
+        )
 
-    new_user = User(
-        username=data["username"],
-        first_name=data["first_name"],
-        last_name=data["last_name"],
-        email=data["email"],
-        phone=data["phone"],
-    )
-    db.session.add(new_user)
-    db.session.commit()
+        db.session.add(new_user)
+        db.session.commit()
+
+        return user_schema.dump(new_user)
+    except IntegrityError as e:
+        db.session.rollback()
+
+        return {"error": "Duplicate data insertion."}
+
+
+@bp.route("/", methods=["POST"])
+def register():
+    """
+    Register a new user
+    """
+    # Get data
+    json_data = request.json
+
+    try:
+        data = user_schema.load(json_data)
+    except ValidationError as e:
+        return jsonify(e.messages), 422
+
+    # Set is_active to False
+    data["is_active"] = False
+
+    # Create User
+    user = create_user(data)
+
+    if "error" in user:
+        return jsonify(user), 400
+
+    # TO DO: Send email verification
 
     return (
-        jsonify(
-            {
-                "id": new_user.id,
-                "username": new_user.username,
-                "first_name": new_user.first_name,
-                "last_name": new_user.last_name,
-                "email": new_user.email,
-                "phone": new_user.phone,
-            }
-        ),
+        jsonify(user),
         201,
     )
+
+
+@bp.route("/login", methods=["POST"])
+def login():
+    # Get data
+    json_data = request.json
+
+    try:
+        data = user_schema.load(json_data)
+    except ValidationError as e:
+        return jsonify(e.messages), 422
+
+    # Get User
+    user = db.first_or_404(db.select(User).filter_by(email=data["email"]))
+
+    if not check_password_hash(user.password, data["password"]):
+        return jsonify(error="Incorrect email or password"), 401
+
+    token = create_access_token(identity=user.email)
+
+    return jsonify(token=token), 200

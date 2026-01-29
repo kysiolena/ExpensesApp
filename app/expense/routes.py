@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required, current_user
 from marshmallow import ValidationError
 
 from app.db import db
@@ -9,6 +10,7 @@ bp = Blueprint("expense", __name__, url_prefix="/expense")
 
 
 @bp.route("/", methods=["POST"])
+@jwt_required()
 def create_expense():
     """
     Create a new Expense record
@@ -33,10 +35,13 @@ def create_expense():
     try:
         data = expense_schema.load(json_data)
     except ValidationError as e:
-        return e.messages, 422
+        return jsonify(e.messages), 422
 
     new_expense = Expense(
-        title=data["title"], amount=data["amount"], description=data["description"]
+        title=data["title"],
+        amount=data["amount"],
+        description=data["description"],
+        user_id=current_user.id,
     )
     db.session.add(new_expense)
     db.session.commit()
@@ -48,6 +53,7 @@ def create_expense():
 
 
 @bp.route("/", methods=["GET"])
+@jwt_required()
 def get_expenses():
     """
     Retrieve all Expense records
@@ -62,15 +68,14 @@ def get_expenses():
                  items:
                       $ref: '#/definitions/ExpenseOut'
     """
-    expenses = Expense.query.all()
-
     return (
-        jsonify(expenses_schema.dump(expenses)),
+        jsonify(expenses_schema.dump(current_user.expenses)),
         200,
     )
 
 
 @bp.route("/<int:id>", methods=["GET"])
+@jwt_required()
 def get_expense(id: int):
     """
     Retrieve an Expense record
@@ -97,6 +102,9 @@ def get_expense(id: int):
     """
     expense = db.get_or_404(Expense, id)
 
+    if expense.user_id != current_user.id:
+        return jsonify(error="You are not authorized to see this expense"), 401
+
     return (
         jsonify(expense_schema.dump(expense)),
         200,
@@ -104,6 +112,7 @@ def get_expense(id: int):
 
 
 @bp.route("/<int:id>", methods=["PATCH"])
+@jwt_required()
 def update_expense(id: int):
     """
     Update an Expense record
@@ -136,12 +145,15 @@ def update_expense(id: int):
     """
     expense = db.get_or_404(Expense, id)
 
+    if expense.user_id != current_user.id:
+        return jsonify(error="You are not authorized to update this expense"), 401
+
     json_data = request.json
 
     try:
         data = expense_schema.load(json_data, partial=True)
     except ValidationError as e:
-        return e.messages, 422
+        return jsonify(e.messages), 422
 
     expense.title = data.get("title", expense.title)
     expense.amount = data.get("amount", expense.amount)
@@ -156,6 +168,7 @@ def update_expense(id: int):
 
 
 @bp.route("/<int:id>", methods=["DELETE"])
+@jwt_required()
 def delete_expense(id: int):
     """
     Delete an Expense record
@@ -179,6 +192,9 @@ def delete_expense(id: int):
               $ref: '#/definitions/NotFound'
     """
     expense = db.get_or_404(Expense, id)
+
+    if expense.user_id != current_user.id:
+        return jsonify(error="You are not authorized to delete this expense"), 401
 
     db.session.delete(expense)
     db.session.commit()

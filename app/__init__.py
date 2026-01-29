@@ -1,5 +1,7 @@
 from flask import Flask, jsonify
 
+from app.config import JWT_SECRET_KEY
+
 
 def create_app():
     from app.swagger_utils import build_swagger
@@ -9,9 +11,12 @@ def create_app():
     from app.expense.routes import bp as expense_bp
     from app.user.routes import bp as user_bp
     from app.migrate import migrate
+    from app.jwt import jwt
 
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(SQLALCHEMY_DATABASE_URI=SQLALCHEMY_DATABASE_URI)
+    app.config.from_mapping(
+        SQLALCHEMY_DATABASE_URI=SQLALCHEMY_DATABASE_URI, JWT_SECRET_KEY=JWT_SECRET_KEY
+    )
 
     @app.route("/")
     def home():
@@ -43,6 +48,8 @@ def create_app():
 
     # render_as_batch for SQLite only
     migrate.init_app(app, db, render_as_batch=True)
+
+    jwt.init_app(app)
 
     # Register Blueprints
     app.register_blueprint(user_bp)
