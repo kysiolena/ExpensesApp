@@ -51,9 +51,13 @@ Route: `/docs`
 ```terminaloutput
     python -c 'import secrets; print(secrets.token_hex(16))'
 ```
+## Run Tests
+```terminaloutput
+    python -m pytest tests -v
+```
 
 ## TO DO
 
 1. [ ] Add email verification
 2. [ ] Add logging system
-3. [ ] Add tests
+3. [x] Add tests

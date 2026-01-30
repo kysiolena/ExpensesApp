@@ -1,22 +1,21 @@
-from flask import Flask, jsonify
+import os
 
-from app.config import JWT_SECRET_KEY
+from flask import Flask, jsonify
 
 
 def create_app():
     from app.swagger_utils import build_swagger
     from app.swagger_bp import swagger_ui_blueprint
     from app.db import db
-    from app.config import SQLALCHEMY_DATABASE_URI, SWAGGER_API_URL
+    from app.config import SWAGGER_API_URL, Config
     from app.expense.routes import bp as expense_bp
     from app.user.routes import bp as user_bp
     from app.migrate import migrate
     from app.jwt import jwt
 
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(
-        SQLALCHEMY_DATABASE_URI=SQLALCHEMY_DATABASE_URI, JWT_SECRET_KEY=JWT_SECRET_KEY
-    )
+    config_type = os.getenv("CONFIG_TYPE", "app.config.Config")
+    app.config.from_object(config_type)
 
     @app.route("/")
     def home():
