@@ -58,6 +58,6 @@ Route: `/docs`
 
 ## TO DO
 
-1. [ ] Add email verification
-2. [ ] Add logging system
-3. [x] Add tests
+1. [x] Add logging system
+2. [x] Add tests
+3. [ ] (Optional) Add email verification

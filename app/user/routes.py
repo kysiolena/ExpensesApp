@@ -40,6 +40,7 @@ def create_user(data):
 
         return user_schema.dump(new_user)
     except IntegrityError as e:
+        log.exception(f"IntegrityError during user creation: {e}")
         db.session.rollback()
 
         return {"error": "Duplicate data insertion."}
@@ -77,6 +78,7 @@ def register():
     try:
         data = user_schema.load(json_data)
     except ValidationError as e:
+        log.exception(f"ValidationError during user creation: {str(e.messages)}")
         return jsonify(e.messages), 422
 
     # Set is_active to False
@@ -136,6 +138,7 @@ def login():
         no_fields: Sequence[str] = ["username", "first_name", "last_name", "phone"]
         data = user_schema.load(json_data, partial=no_fields)
     except ValidationError as e:
+        log.exception(f"ValidationError during user login: {str(e.messages)}")
         return jsonify(e.messages), 422
 
     # Get User

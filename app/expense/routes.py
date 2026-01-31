@@ -44,6 +44,7 @@ def create_expense():
     try:
         data = expense_schema.load(json_data)
     except ValidationError as e:
+        log.exception(f"ValidationError during Expense creation: {str(e.messages)}")
         return jsonify(e.messages), 422
 
     new_expense = Expense(
@@ -189,6 +190,7 @@ def update_expense(id: int):
     try:
         data = expense_schema.load(json_data, partial=True)
     except ValidationError as e:
+        log.exception(f"ValidationError during user update: {str(e.messages)}")
         return jsonify(e.messages), 422
 
     expense.title = data.get("title", expense.title)
