@@ -91,7 +91,7 @@ def init_db(client):
 @pytest.fixture(scope="module")
 def default_user_token(client):
     response = client.post(
-        "/users/login",
+        "/user/login",
         json={
             "email": "mary@world.com",
             "password": "strong_password",
@@ -104,7 +104,7 @@ def default_user_token(client):
 @pytest.fixture(scope="module")
 def second_user_token(client):
     response = client.post(
-        "/users/login",
+        "/user/login",
         json={
             "email": "patrick@world.com",
             "password": "strong_password",
