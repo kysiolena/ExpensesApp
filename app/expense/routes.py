@@ -5,6 +5,10 @@ from marshmallow import ValidationError
 from app.db import db
 from app.expense.models import Expense
 from app.expense.schemas import expense_schema, expenses_schema
+from app.utils import config_logger
+
+# Config Logger
+log = config_logger("ExpenseRoutes")
 
 bp = Blueprint("expense", __name__, url_prefix="/expense")
 
@@ -34,11 +38,13 @@ def create_expense():
            schema:
               $ref: '#/definitions/ExpenseOut'
     """
+    log.info("Started Expense creation")
     json_data = request.json
 
     try:
         data = expense_schema.load(json_data)
     except ValidationError as e:
+        log.exception(f"ValidationError during Expense creation: {str(e.messages)}")
         return jsonify(e.messages), 422
 
     new_expense = Expense(
@@ -49,6 +55,9 @@ def create_expense():
     )
     db.session.add(new_expense)
     db.session.commit()
+
+    log.debug(f"Expense with ID {new_expense.id} was created")
+    log.info("Finished Expense creation")
 
     return (
         jsonify(expense_schema.dump(new_expense)),
@@ -175,11 +184,13 @@ def update_expense(id: int):
     if expense.user_id != current_user.id:
         return jsonify(error="You are not authorized to update this expense"), 401
 
+    log.info("Started Expense updating")
     json_data = request.json
 
     try:
         data = expense_schema.load(json_data, partial=True)
     except ValidationError as e:
+        log.exception(f"ValidationError during user update: {str(e.messages)}")
         return jsonify(e.messages), 422
 
     expense.title = data.get("title", expense.title)
@@ -187,6 +198,9 @@ def update_expense(id: int):
     expense.description = data.get("description", expense.description)
 
     db.session.commit()
+
+    log.debug(f"Expense with ID {expense.id} was updated")
+    log.info("Finished Expense updating")
 
     return (
         jsonify(expense_schema.dump(expense)),
@@ -231,7 +245,12 @@ def delete_expense(id: int):
     if expense.user_id != current_user.id:
         return jsonify(error="You are not authorized to delete this expense"), 401
 
+    log.info("Started Expense deleting")
+
     db.session.delete(expense)
     db.session.commit()
+
+    log.debug(f"Expense with ID {expense.id} was deleted")
+    log.info("Finished Expense deleting")
 
     return "", 204
