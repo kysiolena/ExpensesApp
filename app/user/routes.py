@@ -9,6 +9,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app.db import db
 from app.user.models import User
 from app.user.schemas import user_schema
+from app.utils import config_logger
+
+# Config Logger
+log = config_logger("UserRoutes")
 
 bp = Blueprint("user", __name__, url_prefix="/user")
 
@@ -17,6 +21,7 @@ def create_user(data):
     """
     Create a new User record
     """
+    log.info("Started user creation")
     try:
         new_user = User(
             username=data["username"],
@@ -29,6 +34,9 @@ def create_user(data):
 
         db.session.add(new_user)
         db.session.commit()
+
+        log.debug(f"User with ID {new_user.id} was created")
+        log.info("Finished user creation")
 
         return user_schema.dump(new_user)
     except IntegrityError as e:
@@ -119,6 +127,8 @@ def login():
            description: Validation error
     """
 
+    log.info("Started user login")
+
     # Get data
     json_data = request.json
 
@@ -135,5 +145,8 @@ def login():
         return jsonify(error="Incorrect email or password"), 401
 
     token = create_access_token(identity=user.email)
+
+    log.debug(f"User with ID {user.id} was logged in")
+    log.info("Finished user login")
 
     return jsonify(token=token), 200
